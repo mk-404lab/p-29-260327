@@ -51,7 +51,9 @@ public class ApiV1PostControllerTest {
                 .andExpect(jsonPath("$[0].createDate").exists())
                 .andExpect(jsonPath("$[0].modifyDate").exists())
                 .andExpect(jsonPath("$[0].title").value("제목3"))
-                .andExpect(jsonPath("$[0].content").value("내용3"));
+                .andExpect(jsonPath("$[0].content").value("내용3"))
+                .andExpect(jsonPath("$[0].authorId").value(4))
+                .andExpect(jsonPath("$[0].authorName").value("유저2"));
     }
 
     @Test
@@ -71,7 +73,9 @@ public class ApiV1PostControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("제목1"))
-                .andExpect(jsonPath("$.content").value("내용1"));
+                .andExpect(jsonPath("$.content").value("내용1"))
+                .andExpect(jsonPath("$.authorId").value(3))
+                .andExpect(jsonPath("$.authorName").value("유저1"));
 
 
         Post post = postRepository.findById(targetId).get();
