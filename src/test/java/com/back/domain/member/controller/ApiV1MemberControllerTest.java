@@ -1,5 +1,6 @@
 package com.back.domain.member.controller;
 
+import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,5 +62,69 @@ public class ApiV1MemberControllerTest {
                 .andExpect(jsonPath("$.data.memberDto.createDate").exists())
                 .andExpect(jsonPath("$.data.memberDto.modifyDate").exists())
                 .andExpect(jsonPath("$.data.memberDto.name").value(nickname));
+    }
+
+    @Test
+    @DisplayName("회원 가입, 이미 존재하는 username으로 가입 - user1로 가입")
+    void t2() throws Exception {
+
+        String username = "user1";
+        String password = "1234";
+        String nickname = "새유저";
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/members/join")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "username" : "%s",
+                                            "password": "%s",
+                                            "nickname": "%s"
+                                        
+                                        }
+                                        """.formatted(username, password, nickname)
+                                )
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("join"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.resultCode").value("409-1"))
+                .andExpect(jsonPath("$.msg").value("이미 사용중인 아이디입니다."));
+    }
+
+    @Test
+    @DisplayName("로그인")
+    void t3() throws Exception {
+
+        String username = "user1";
+        String password = "1234";
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/members/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "username": "%s",
+                                            "password": "%s"
+                                        }
+                                        """.formatted(username, password)
+                                )
+                )
+                .andDo(print());
+
+        Member member = memberRepository.findByUsername(username).get();
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1MemberController.class))
+                .andExpect(handler().methodName("login"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultCode").value("200-1"))
+                .andExpect(jsonPath("$.msg").value("%s님 환영합니다.".formatted(member.getNickname())))
+                .andExpect(jsonPath("$.data.apiKey").exists());
     }
 }

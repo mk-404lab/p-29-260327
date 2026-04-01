@@ -18,7 +18,7 @@ public class MemberService {
 
         findByUsername(username).ifPresent(
                 m -> {
-                    throw new ServiceException("409-1", "이미 사용 중인 아이디입니다.");
+                    throw new ServiceException("409-1", "이미 사용중인 아이디입니다.");
                 }
         );
 
