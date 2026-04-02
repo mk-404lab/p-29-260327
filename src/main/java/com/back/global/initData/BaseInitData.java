@@ -32,7 +32,7 @@ public class BaseInitData {
 
     @Transactional
     public void work2() {
-        if(postService.count() > 0) {
+        if (postService.count() > 0) {
             return;
         }
 
@@ -41,7 +41,7 @@ public class BaseInitData {
 
         Post post1 = postService.write(author1, "제목1", "내용1");
         Post post2 = postService.write(author1, "제목2", "내용2");
-        postService.write(author2,"제목3", "내용3");
+        postService.write(author2, "제목3", "내용3");
 
         post1.addComment(author1, "댓글 1-1");
         post1.addComment(author1, "댓글 1-2");
@@ -56,11 +56,10 @@ public class BaseInitData {
             return;
         }
 
-        memberService.join("system", "system", "시스템");
-        memberService.join("admin", "admin", "운영자");
-        memberService.join("user1", "1234", "유저1");
-        memberService.join("user2", "1234", "유저2");
-        memberService.join("user3", "1234", "유저3");
-
+        memberService.join("system", "system", "시스템", "system");
+        memberService.join("admin", "admin", "운영자", "admin");
+        memberService.join("user1", "1234", "유저1", "user1");
+        memberService.join("user2", "1234", "유저2", "user2");
+        memberService.join("user3", "1234", "유저3", "user3");
     }
 }
