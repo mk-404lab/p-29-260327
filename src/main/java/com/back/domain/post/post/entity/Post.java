@@ -3,6 +3,7 @@ package com.back.domain.post.post.entity;
 import com.back.domain.member.entity.Member;
 import com.back.domain.post.comment.entity.Comment;
 import com.back.global.entity.BaseEntity;
+import com.back.global.exception.ServiceException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -66,5 +67,17 @@ public class Post extends BaseEntity {
     public void modifyComment(int commentId, String content) {
         Comment comment = findCommentById(commentId).get();
         comment.update(content);
+    }
+
+    public void checkModify(Member actor) {
+        if (!actor.equals(this.getAuthor())) {
+            throw new ServiceException("403-1", "수정 권한이 없습니다.");
+        }
+    }
+
+    public void checkDelete(Member actor) {
+        if (!actor.equals(this.getAuthor())) {
+            throw new ServiceException("403-1", "삭제 권한이 없습니다.");
+        }
     }
 }
