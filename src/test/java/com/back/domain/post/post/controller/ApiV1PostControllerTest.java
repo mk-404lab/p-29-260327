@@ -300,7 +300,7 @@ public class ApiV1PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 작성, 올바르지 않은 헤더 형식")
+    @DisplayName("글 작성, 올바르지 않은 인증 데이터 형식")
     void t9() throws Exception {
         String title = "제목입니다.";
         String content = "내용입니다.";

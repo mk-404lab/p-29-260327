@@ -1,5 +1,7 @@
 package com.back.domain.post.comment.controller;
 
+import com.back.domain.member.entity.Member;
+import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.post.comment.entity.Comment;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.repository.PostRepository;
@@ -31,6 +33,9 @@ public class ApiV1CommentControllerTest {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     @Test
     @DisplayName("댓글 다건 조회 - 1번 글에 대한 댓글")
@@ -93,10 +98,12 @@ public class ApiV1CommentControllerTest {
 
         int targetPostId = 1;
         String content = "새로운 댓글";
+        Member author = memberRepository.findByUsername("user1").get();
 
         ResultActions resultActions = mvc
                 .perform(
                         post("/api/v1/posts/%d/comments".formatted(targetPostId))
+                                .header("Authorization", "Bearer %s".formatted(author.getApiKey()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
@@ -174,5 +181,59 @@ public class ApiV1CommentControllerTest {
         Post post = postRepository.findById(targetPostId).orElse(null);
         Comment comment = post.findCommentById(targetCommentId).orElse(null);
         assertThat(comment).isNull();
+    }
+
+    @Test
+    @DisplayName("댓글 수정 - 다른 작성자의 댓글 수정")
+    void t6() throws Exception {
+        long targetPostId = 1;
+        long targetCommentId = 1;
+        String content = "댓글 내용 수정";
+
+        Member author = memberRepository.findByUsername("user2").get();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        put("/api/v1/posts/%d/comments/%d".formatted(targetPostId, targetCommentId))
+                                .header("Authorization", "Bearer %s".formatted(author.getApiKey()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "content": "%s"
+                                        }
+                                        """.formatted(content))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1CommentController.class))
+                .andExpect(handler().methodName("modify"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-1"))
+                .andExpect(jsonPath("$.msg").value("댓글 수정 권한이 없습니다."));
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 - 다른 작성자의 댓글 삭제")
+    void t7() throws Exception {
+        long targetPostId = 1;
+        long targetCommentId = 1;
+
+        Member author = memberRepository.findByUsername("user2").get();
+
+        ResultActions resultActions = mvc
+                .perform(
+                        delete("/api/v1/posts/%d/comments/%d".formatted(targetPostId, targetCommentId))
+                                .header("Authorization", "Bearer %s".formatted(author.getApiKey()))
+                )
+                .andDo(print());
+
+        // 필수 검증
+        resultActions
+                .andExpect(handler().handlerType(ApiV1CommentController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.resultCode").value("403-2"))
+                .andExpect(jsonPath("$.msg").value("댓글 삭제 권한이 없습니다."));
     }
 }
