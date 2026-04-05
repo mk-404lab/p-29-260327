@@ -138,6 +138,10 @@ public class ApiV1MemberControllerTest {
                     assertThat(apiKeyCookie).isNotNull();
                     assertThat(apiKeyCookie.getValue()).isEqualTo(apiKey);
 
+                    assertThat(apiKeyCookie.getPath()).isEqualTo("/");
+                    assertThat(apiKeyCookie.isHttpOnly()).isTrue();
+
+                    assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
                 }
         );
     }

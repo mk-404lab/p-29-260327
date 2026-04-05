@@ -18,9 +18,13 @@ public class Rq {
     private final HttpServletResponse response;
 
     public void addCookie(String name, String value) {
-        response.addCookie(
-                new Cookie(name, value)
-        );
+
+        Cookie cookie = new Cookie(name, value);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setDomain("localhost");
+
+        response.addCookie(cookie);
     }
 
     public Member getActor() {
