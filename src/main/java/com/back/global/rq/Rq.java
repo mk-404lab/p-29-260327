@@ -33,17 +33,6 @@ public class Rq {
         String authorizationHeader = request.getHeader("Authorization");
         String apiKey;
 
-//        if (authorizationHeader == null) {
-//            throw new ServiceException("401-1", "인증 정보가 헤더에 존재하지 않습니다.");
-//        }
-//
-//        if (!authorizationHeader.startsWith("Bearer ")) {
-//            throw new ServiceException("401-2", "잘못된 형식의 인증 데이터입니다.");
-//        }
-//
-//        String apiKey = authorizationHeader.replace("Bearer ", "");
-
-
         if (authorizationHeader != null) {
         // 1번 방식 : 요청 헤더에서 authorization 인증 정보를 찾음
 
@@ -69,4 +58,15 @@ public class Rq {
                 () -> new ServiceException("401-1", "유효하지 않은 API 키입니다.")
         );
     }
+
+    public void deleteCookie(String name) {
+        Cookie cookie = new Cookie(name, "");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setDomain("localhost");
+        cookie.setMaxAge(0);
+
+        response.addCookie(cookie);
+    }
 }
+
