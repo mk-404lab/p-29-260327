@@ -6,7 +6,6 @@ import com.back.domain.member.service.MemberService;
 import com.back.global.exception.ServiceException;
 import com.back.global.rq.Rq;
 import com.back.global.rsData.RsData;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -67,9 +66,7 @@ public class ApiV1MemberController {
             throw new ServiceException("401-2", "비밀번호가 일치하지 않습니다.");
         }
 
-        response.addCookie(
-                new Cookie("apiKey", actor.getApiKey())
-        );
+        rq.addCookie("apiKey", actor.getApiKey());
 
         return new RsData(
                 "%s님 환영합니다.".formatted(actor.getName()),
