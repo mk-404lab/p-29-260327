@@ -39,6 +39,13 @@ public class Ut {
         }
 
         public static boolean isValid(String jwt, String secret) {
+            /*
+            isValid() 목적 : 토큰 유효성 검사 - 이 토큰을 믿을 수 있는가?
+
+            True : 서명이 일치하고, 유효기간(Expiration)이 지나지 않았으며, 토큰 형식이 올바른 경우
+            False : 서명이 위조되었거나, 만료되었거나, 구조가 깨진 경우
+            */
+
             byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
             SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
 
@@ -56,16 +63,27 @@ public class Ut {
             }
         }
 
-        public static Map<String, Object> payload(String jwt, String secret) {
+        public static Map<String, Object> payloadOrNull(String jwt, String secret) {
+            /*
+            payload() 목적 : 데이터 추출 - 토큰 안에 어떤 정보가 들어있는가?
+
+            - isValid와 마찬가지로 먼저 서명 검증 수행
+            - 검증이 통과되면 토큰의 바디인 Payload(Claims)를 Map<> 형태로 반환
+             */
+
             byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
             SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
 
-            return (Map<String, Object>)Jwts
-                    .parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parse(jwt)
-                    .getPayload();
+            if (isValid(jwt, secret)) {
+                return (Map<String, Object>)Jwts
+                        .parser()
+                        .verifyWith(secretKey)
+                        .build()
+                        .parse(jwt)
+                        .getPayload();
+            }
+
+            return null;
         }
     }
 }
