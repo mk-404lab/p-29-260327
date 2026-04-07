@@ -1,5 +1,7 @@
 package com.back.domain.member.service;
 
+import com.back.domain.member.entity.Member;
+import com.back.domain.member.repository.MemberRepository;
 import com.back.standard.ut.Ut;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -24,6 +26,9 @@ public class AuthTokenServiceTest {
 
     @Autowired
     private AuthTokenService authTokenService;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     private String secretPattern = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890";
     private long expireSeconds = 1000L * 60 * 60 * 24 * 365;
@@ -72,6 +77,16 @@ public class AuthTokenServiceTest {
         assertThat(jwt).isNotBlank();
 
         System.out.println("jwt = " + jwt);
+    }
+
+    @Test
+    @DisplayName("AuthTokenService를 통해서 accessToken 생성")
+    void t4() {
+        Member member1 = memberRepository.findByUsername("user1").get();
+        String accessToken = authTokenService.getAccessToken(member1);
+        assertThat(accessToken).isNotBlank();
+
+        System.out.println("accessToken = " +accessToken);
     }
 }
 
