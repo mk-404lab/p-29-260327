@@ -40,7 +40,7 @@ public class AuthTokenServiceTest {
 
     @Test
     @DisplayName("jjwt 최신 방식으로 JWT 생성, {name=\\\"Paul\\\", age=23}")
-    void t2() {
+    void t2() throws InterruptedException{
 
         // 토큰 만료기간: 1년
         long expireMillis = 1000L * 60 * 60 * 24 * 365;
@@ -61,10 +61,13 @@ public class AuthTokenServiceTest {
                 .signWith(secretKey) // 키 서명
                 .compact();
 
+        byte[] keyBytes2 = "abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz1234567890sdfgdfg".getBytes(StandardCharsets.UTF_8);
+        SecretKey secretKey2 = Keys.hmacShaKeyFor(keyBytes2);
+
         // jwt 확인(파싱)
         Map<String, Object> parsedPayload = (Map<String, Object>) Jwts
                 .parser()
-                .verifyWith(secretKey)
+                .verifyWith(secretKey2)
                 .build()
                 .parse(jwt)
                 .getPayload();
@@ -87,6 +90,8 @@ public class AuthTokenServiceTest {
         );
 
         assertThat(jwt).isNotBlank();
+        boolean rst = Ut.jwt.isValid(jwt, secretPattern);
+        assertThat(rst).isTrue();
 
         System.out.println("jwt = " + jwt);
     }
