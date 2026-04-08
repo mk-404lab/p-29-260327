@@ -4,10 +4,11 @@ import com.back.domain.member.entity.Member;
 import com.back.domain.member.repository.MemberRepository;
 import com.back.domain.post.post.entity.Post;
 import com.back.domain.post.post.repository.PostRepository;
-import com.back.domain.post.post.service.PostService;
+import com.back.standard.ut.Ut;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
@@ -15,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInRelativeOrder;
@@ -38,8 +41,11 @@ public class ApiV1PostControllerTest {
     @Autowired
     private MemberRepository memberRepository;
 
-    @Autowired
-    private PostService postService;
+    @Value("${custom.jwt.secretPattern}")
+    private String secretPattern;
+
+    @Value("${custom.jwt.expiration}")
+    private long expiration;
 
     @Test
     @DisplayName("글 다건 조회")
@@ -260,6 +266,41 @@ public class ApiV1PostControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultCode").value("400-2"))
                 .andExpect(jsonPath("$.msg").value("잘못된 형식의 요청 데이터입니다."));
+    }
+
+    @Test
+    @DisplayName("글 작성, 유효한 엑세스 토큰, 잘못된 apiKey")
+    void t7_1() throws Exception {
+        String title = "제목입니다.";
+        String content = "내용입니다";
+
+        Member author = memberRepository.findByUsername("user1").get();
+
+        String accessToken = Ut.jwt.toString(
+                secretPattern,
+                expiration,
+                Map.of("id", author.getId(), "username", author.getUsername())
+        );
+
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/api/v1/posts")
+                                .header("Authorization", "Bearer wrong-api-key %s".formatted(accessToken))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "title": "%s",
+                                            "content": "%s"
+                                        }
+                                        """.formatted(title, content))
+                )
+                .andDo(print());
+
+        resultActions
+                .andExpect(handler().handlerType(ApiV1PostController.class))
+                .andExpect(handler().methodName("write"))
+                .andExpect(status().isCreated());
+
     }
 
     @Test
